@@ -1,0 +1,27 @@
+package dio.portifolio.controller;
+
+import dio.portifolio.dto.FuncionarioInputDTO;
+import dio.portifolio.dto.FuncionarioOutputDTO;
+import dio.portifolio.service.FuncionarioService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/funcionarios")
+@RequiredArgsConstructor
+public class FuncionarioController {
+
+    private final FuncionarioService service;
+
+    @PostMapping
+    public FuncionarioOutputDTO criar(@RequestBody FuncionarioInputDTO dto) {
+        return service.criar(dto);
+    }
+
+    @GetMapping
+    public List<FuncionarioOutputDTO> listar() {
+        return service.listar();
+    }
+}
