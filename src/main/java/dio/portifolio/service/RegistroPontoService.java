@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -54,13 +55,19 @@ public class RegistroPontoService {
 
         if (dto.getTipo() == TipoRegistro.SAIDA) {
 
-            RegistroPonto entrada = registros.get(registros.size() - 1);
+            LocalDateTime inicioDia = LocalDateTime.now().toLocalDate().atStartOfDay();
+            LocalDateTime fimDia = LocalDateTime.now().toLocalDate().atTime(23, 59, 59);
 
-            long minutosTrabalhados = java.time.Duration
-                    .between(entrada.getDataHora(), registro.getDataHora())
-                    .toMinutes();
+            List<RegistroPonto> registrosDia = repository
+                    .findByFuncionarioIdAndDataHoraBetween(
+                            funcionario.getId(),
+                            inicioDia,
+                            fimDia
+                    );
 
-            long saldo = minutosTrabalhados - JORNADA_DIARIA_MINUTOS;
+            long totalMinutos = calcularMinutosTrabalhados(registrosDia);
+
+            long saldo = totalMinutos - JORNADA_DIARIA_MINUTOS;
 
             atualizarBancoHoras(funcionario, saldo);
         }
@@ -79,6 +86,26 @@ public class RegistroPontoService {
         banco.setSaldoMinutos(banco.getSaldoMinutos() + saldoMinutos);
 
         bancoHorasRepository.save(banco);
+    }
+    private long calcularMinutosTrabalhados(List<RegistroPonto> registros) {
+
+        long total = 0;
+
+        for (int i = 0; i < registros.size() - 1; i++) {
+
+            RegistroPonto atual = registros.get(i);
+            RegistroPonto proximo = registros.get(i + 1);
+
+            if (atual.getTipo() == TipoRegistro.ENTRADA &&
+                    proximo.getTipo() == TipoRegistro.SAIDA) {
+
+                total += Duration
+                        .between(atual.getDataHora(), proximo.getDataHora())
+                        .toMinutes();
+            }
+        }
+
+        return total;
     }
 
     public List<RegistroPonto> listarPorEmail(String email) {
