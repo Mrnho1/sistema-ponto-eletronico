@@ -4,6 +4,7 @@ import dio.portifolio.adapter.FuncionarioAdapter;
 import dio.portifolio.dto.FuncionarioInputDTO;
 import dio.portifolio.dto.FuncionarioOutputDTO;
 import dio.portifolio.entity.Funcionario;
+import dio.portifolio.entity.Role;
 import dio.portifolio.exception.BusinessException;
 import dio.portifolio.repository.FuncionarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class FuncionarioService {
 
 
         funcionario.setSenha(passwordEncoder.encode(dto.getSenha()));
+        funcionario.setRole(Role.USER);
         funcionario.setJornadaMinutos(480L);
 
         Funcionario salvo = repository.save(funcionario);
