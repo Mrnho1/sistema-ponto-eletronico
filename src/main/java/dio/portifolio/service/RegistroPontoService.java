@@ -6,6 +6,7 @@ import dio.portifolio.entity.RegistroPonto;
 import dio.portifolio.repository.FuncionarioRepository;
 import dio.portifolio.repository.RegistroPontoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,14 +19,19 @@ public class RegistroPontoService {
     private final RegistroPontoRepository repository;
     private final FuncionarioRepository funcionarioRepository;
 
-    public RegistroPonto baterPonto(Long funcionarioId, RegistroPontoDTO dto) {
+    public RegistroPonto baterPonto(RegistroPontoDTO dto) {
 
-        Funcionario funcionario = funcionarioRepository.findById(funcionarioId)
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Funcionario funcionario = funcionarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
 
-        List<RegistroPonto> registros = repository.findByFuncionarioId(funcionarioId);
+        List<RegistroPonto> registros = repository.findByFuncionarioId(funcionario.getId());
 
-
+        // regra de negócio
         if (!registros.isEmpty()) {
             RegistroPonto ultimo = registros.get(registros.size() - 1);
 
@@ -35,7 +41,7 @@ public class RegistroPontoService {
         }
 
         RegistroPonto registro = RegistroPonto.builder()
-                .dataHora(LocalDateTime.now())
+                .dataHora(java.time.LocalDateTime.now())
                 .tipo(dto.getTipo())
                 .funcionario(funcionario)
                 .build();
@@ -43,7 +49,11 @@ public class RegistroPontoService {
         return repository.save(registro);
     }
 
-    public List<RegistroPonto> listarPorFuncionario(Long funcionarioId) {
-        return repository.findByFuncionarioId(funcionarioId);
+    public List<RegistroPonto> listarPorEmail(String email) {
+
+        Funcionario funcionario = funcionarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
+
+        return repository.findByFuncionarioId(funcionario.getId());
     }
 }

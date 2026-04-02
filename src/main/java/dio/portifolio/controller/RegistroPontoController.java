@@ -5,6 +5,7 @@ import dio.portifolio.dto.RegistroPontoDTO;
 import dio.portifolio.entity.RegistroPonto;
 import dio.portifolio.service.RegistroPontoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,14 +18,19 @@ public class RegistroPontoController {
 
     private final RegistroPontoService service;
 
-    @PostMapping("/{funcionarioId}")
-    public RegistroPonto baterPonto(@PathVariable Long funcionarioId,
-                                    @RequestBody RegistroPontoDTO dto) {
-        return service.baterPonto(funcionarioId, dto);
+    @PostMapping
+    public RegistroPonto baterPonto(@RequestBody RegistroPontoDTO dto) {
+        return service.baterPonto(dto);
     }
 
-    @GetMapping("/{funcionarioId}")
-    public List<RegistroPonto> listar(@PathVariable Long funcionarioId) {
-        return service.listarPorFuncionario(funcionarioId);
+    @GetMapping("/me")
+    public List<RegistroPonto> listar() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return service.listarPorEmail(email);
     }
 }
