@@ -32,7 +32,7 @@ public class FuncionarioService {
 
 
         funcionario.setSenha(passwordEncoder.encode(dto.getSenha()));
-
+        funcionario.setJornadaMinutos(480L);
 
         Funcionario salvo = repository.save(funcionario);
 
@@ -45,4 +45,5 @@ public class FuncionarioService {
                 .map(FuncionarioAdapter::toDTO)
                 .collect(Collectors.toList());
     }
+
 }

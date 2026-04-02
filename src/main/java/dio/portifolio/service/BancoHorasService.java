@@ -1,21 +1,34 @@
 package dio.portifolio.service;
 
+import dio.portifolio.dto.BancoHorasDTO;
+import dio.portifolio.dto.RelatorioDTO;
 import dio.portifolio.entity.BancoHoras;
 import dio.portifolio.entity.Funcionario;
+import dio.portifolio.entity.RegistroPonto;
 import dio.portifolio.repository.BancoHorasRepository;
 import dio.portifolio.repository.FuncionarioRepository;
+import dio.portifolio.repository.RegistroPontoRepository;
+import dio.portifolio.util.RegistroPontoUtils;
+import dio.portifolio.util.TimeUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BancoHorasService {
 
     private final BancoHorasRepository repository;
+    private final RegistroPontoRepository registroPontoRepository;
     private final FuncionarioRepository funcionarioRepository;
 
-    public BancoHoras getSaldoUsuarioLogado() {
+
+    public BancoHorasDTO getSaldoUsuarioLogado() {
 
         String email = SecurityContextHolder
                 .getContext()
@@ -25,10 +38,42 @@ public class BancoHorasService {
         Funcionario funcionario = funcionarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
 
-        return repository.findByFuncionarioId(funcionario.getId())
+        BancoHoras banco = repository.findByFuncionarioId(funcionario.getId())
                 .orElse(BancoHoras.builder()
                         .funcionario(funcionario)
                         .saldoMinutos(0L)
                         .build());
+
+        return BancoHorasDTO.builder()
+                .saldoMinutos(banco.getSaldoMinutos())
+                .saldoFormatado(TimeUtils.formatarMinutos(banco.getSaldoMinutos()))
+                .build();
     }
+    public List<RelatorioDTO> relatorio(LocalDate inicio, LocalDate fim) {
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Funcionario funcionario = funcionarioRepository.findByEmail(email)
+                .orElseThrow();
+
+        List<RegistroPonto> registros = registroPontoRepository.findByFuncionarioId(funcionario.getId());
+
+        Map<LocalDate, List<RegistroPonto>> agrupado = registros.stream()
+                .collect(Collectors.groupingBy(r -> r.getDataHora().toLocalDate()));
+
+        return agrupado.entrySet().stream()
+                .filter(e -> !e.getKey().isBefore(inicio) && !e.getKey().isAfter(fim))
+                .map(e -> {
+
+                    long minutos = RegistroPontoUtils.calcularMinutosTrabalhados(e.getValue());
+
+                    return RelatorioDTO.builder()
+                            .data(e.getKey().toString())
+                            .minutos(minutos)
+                            .horasFormatadas(TimeUtils.formatarMinutos(minutos))
+                            .build();
+                })
+                .toList();
+    }
+
 }

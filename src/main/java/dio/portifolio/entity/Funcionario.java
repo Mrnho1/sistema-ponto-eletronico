@@ -25,4 +25,7 @@ public class Funcionario {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    private Long jornadaMinutos;
+
 }

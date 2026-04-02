@@ -16,6 +16,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static dio.portifolio.util.RegistroPontoUtils.calcularMinutosTrabalhados;
+
 @Service
 @RequiredArgsConstructor
 public class RegistroPontoService {
@@ -67,7 +69,7 @@ public class RegistroPontoService {
 
             long totalMinutos = calcularMinutosTrabalhados(registrosDia);
 
-            long saldo = totalMinutos - JORNADA_DIARIA_MINUTOS;
+            long saldo = totalMinutos - funcionario.getJornadaMinutos();
 
             atualizarBancoHoras(funcionario, saldo);
         }
@@ -87,26 +89,7 @@ public class RegistroPontoService {
 
         bancoHorasRepository.save(banco);
     }
-    private long calcularMinutosTrabalhados(List<RegistroPonto> registros) {
 
-        long total = 0;
-
-        for (int i = 0; i < registros.size() - 1; i++) {
-
-            RegistroPonto atual = registros.get(i);
-            RegistroPonto proximo = registros.get(i + 1);
-
-            if (atual.getTipo() == TipoRegistro.ENTRADA &&
-                    proximo.getTipo() == TipoRegistro.SAIDA) {
-
-                total += Duration
-                        .between(atual.getDataHora(), proximo.getDataHora())
-                        .toMinutes();
-            }
-        }
-
-        return total;
-    }
 
     public List<RegistroPonto> listarPorEmail(String email) {
 
