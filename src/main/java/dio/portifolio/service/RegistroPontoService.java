@@ -1,5 +1,6 @@
 package dio.portifolio.service;
 
+import dio.portifolio.dto.AtualizarPontoDTO;
 import dio.portifolio.dto.RegistroPontoDTO;
 import dio.portifolio.entity.BancoHoras;
 import dio.portifolio.entity.Funcionario;
@@ -8,12 +9,14 @@ import dio.portifolio.entity.TipoRegistro;
 import dio.portifolio.repository.BancoHorasRepository;
 import dio.portifolio.repository.FuncionarioRepository;
 import dio.portifolio.repository.RegistroPontoRepository;
+import dio.portifolio.util.RegistroPontoUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static dio.portifolio.util.RegistroPontoUtils.calcularMinutosTrabalhados;
@@ -99,6 +102,51 @@ public class RegistroPontoService {
         Funcionario funcionario = funcionarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
 
-        return repository.findByFuncionarioId(funcionario.getId());
+        return repository.findByFuncionarioId(funcionario.getId())
+                .stream()
+                .sorted(Comparator.comparing(RegistroPonto::getDataHora))
+                .toList();
     }
+
+    public List<RegistroPonto> listarPorFuncionario(Long funcionarioId) {
+        return repository.findByFuncionarioId(funcionarioId);
+    }
+
+    public void atualizarPonto(AtualizarPontoDTO dto) {
+
+        RegistroPonto registro = repository.findById(dto.getRegistroId())
+                .orElseThrow(() -> new RuntimeException("Registro não encontrado"));
+
+        Funcionario funcionario = registro.getFuncionario();
+
+        // 🔧 atualiza o ponto
+        registro.setDataHora(dto.getNovaDataHora());
+        repository.save(registro);
+
+        // 🔥 recalcula banco de horas
+        recalcularBancoHoras(funcionario);
+    }
+
+    private void recalcularBancoHoras(Funcionario funcionario) {
+
+        List<RegistroPonto> registros = repository.findByFuncionarioId(funcionario.getId());
+
+        registros.sort(Comparator.comparing(RegistroPonto::getDataHora));
+
+        long totalMinutos = RegistroPontoUtils.calcularMinutosTrabalhados(registros);
+
+        long saldo = totalMinutos - funcionario.getJornadaMinutos();
+
+        BancoHoras banco = bancoHorasRepository
+                .findByFuncionarioId(funcionario.getId())
+                .orElse(BancoHoras.builder()
+                        .funcionario(funcionario)
+                        .saldoMinutos(0L)
+                        .build());
+
+        banco.setSaldoMinutos(saldo);
+
+        bancoHorasRepository.save(banco);
+    }
+
 }
