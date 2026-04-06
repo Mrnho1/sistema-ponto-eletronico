@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "ajustes_manuais")
@@ -13,16 +14,17 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class AjusteManual {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate data;
-
     private String motivo;
 
-    private Long minutos;
+    private LocalDateTime dataHoraOriginal;
+    private LocalDateTime novaDataHora;
+
+    @Enumerated(EnumType.STRING)
+    private TipoRegistro tipo;
 
     @ManyToOne
     @JoinColumn(name = "funcionario_id")

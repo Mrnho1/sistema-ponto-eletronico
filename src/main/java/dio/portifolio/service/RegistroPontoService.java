@@ -57,21 +57,24 @@ public class RegistroPontoService {
 
         if (dto.getTipo() == TipoRegistro.SAIDA) {
 
-            LocalDateTime inicioDia = LocalDateTime.now().toLocalDate().atStartOfDay();
-            LocalDateTime fimDia = LocalDateTime.now().toLocalDate().atTime(23, 59, 59);
+            RegistroPonto entrada = registros.get(registros.size() - 1);
 
-            List<RegistroPonto> registrosDia = repository
-                    .findByFuncionarioIdAndDataHoraBetween(
-                            funcionario.getId(),
-                            inicioDia,
-                            fimDia
-                    );
+            if (!entrada.isProcessado()) {
 
-            long totalMinutos = calcularMinutosTrabalhados(registrosDia);
+                long minutos = Duration
+                        .between(entrada.getDataHora(), registro.getDataHora())
+                        .toMinutes();
 
-            long saldo = totalMinutos - funcionario.getJornadaMinutos();
+                long saldo = minutos - funcionario.getJornadaMinutos();
 
-            atualizarBancoHoras(funcionario, saldo);
+                atualizarBancoHoras(funcionario, saldo);
+
+                entrada.setProcessado(true);
+                registro.setProcessado(true);
+
+                repository.save(entrada);
+                repository.save(registro);
+            }
         }
 
         return repository.save(registro);

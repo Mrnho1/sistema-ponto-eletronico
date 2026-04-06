@@ -26,4 +26,6 @@ public class RegistroPonto {
     @ManyToOne
     @JoinColumn(name = "funcionario_id")
     private Funcionario funcionario;
+
+    private boolean processado;
 }
