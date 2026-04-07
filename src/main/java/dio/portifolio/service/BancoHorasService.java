@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static dio.portifolio.util.RegistroPontoUtils.calcularMinutosTrabalhados;
+
 @Service
 @RequiredArgsConstructor
 public class BancoHorasService {
@@ -65,12 +67,17 @@ public class BancoHorasService {
                 .filter(e -> !e.getKey().isBefore(inicio) && !e.getKey().isAfter(fim))
                 .map(e -> {
 
-                    long minutos = RegistroPontoUtils.calcularMinutosTrabalhados(e.getValue());
+                    long minutosTrabalhados = calcularMinutosTrabalhados(e.getValue());
+
+                    long minutosEsperados = funcionario.getJornadaMinutos();
+
+                    long saldoMinutos = minutosTrabalhados - minutosEsperados;
 
                     return RelatorioDTO.builder()
                             .data(e.getKey().toString())
-                            .minutos(minutos)
-                            .horasFormatadas(TimeUtils.formatarMinutos(minutos))
+                            .horasTrabalhadas(TimeUtils.formatarMinutos(minutosTrabalhados))
+                            .horasEsperadas(TimeUtils.formatarMinutos(minutosEsperados))
+                            .saldo(TimeUtils.formatarMinutos(saldoMinutos))
                             .build();
                 })
                 .toList();

@@ -8,6 +8,7 @@ import lombok.Data;
 public class RelatorioDTO {
 
     private String data;
-    private long minutos;
-    private String horasFormatadas;
+    private String horasTrabalhadas;
+    private String horasEsperadas;
+    private String saldo;
 }
