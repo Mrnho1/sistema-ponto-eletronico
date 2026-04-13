@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface RegistroPontoRepository extends JpaRepository<RegistroPonto, Long> {
 
@@ -14,4 +15,5 @@ public interface RegistroPontoRepository extends JpaRepository<RegistroPonto, Lo
             LocalDateTime inicio,
             LocalDateTime fim
     );
+    Optional<RegistroPonto> findTopByFuncionarioIdOrderByDataHoraDesc(Long funcionarioId);
 }

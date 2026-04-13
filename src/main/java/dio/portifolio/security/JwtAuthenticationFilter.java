@@ -21,7 +21,11 @@ public class JwtAuthenticationFilter extends org.springframework.web.filter.Once
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getServletPath().startsWith("/auth");
+        String path = request.getServletPath();
+
+        return path.startsWith("/auth")
+                || path.startsWith("/h2-console")
+                || path.equals("/funcionarios");
     }
 
     @Override

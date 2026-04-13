@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -149,4 +150,36 @@ public class RegistroPontoService {
         bancoHorasRepository.save(banco);
     }
 
+    public List<RegistroPonto> buscarHoje() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Funcionario funcionario = funcionarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
+
+        LocalDate hoje = LocalDate.now();
+
+        return repository.findByFuncionarioIdAndDataHoraBetween(
+                funcionario.getId(),
+                hoje.atStartOfDay(),
+                hoje.atTime(23, 59, 59)
+        );
+    }
+    public RegistroPonto buscarUltimoRegistro() {
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        Funcionario funcionario = funcionarioRepository.findByEmail(email)
+                .orElseThrow();
+
+        return repository
+                .findTopByFuncionarioIdOrderByDataHoraDesc(funcionario.getId())
+                .orElse(null);
+    }
 }

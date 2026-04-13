@@ -33,4 +33,12 @@ public class RegistroPontoController {
 
         return service.listarPorEmail(email);
     }
+    @GetMapping("/hoje")
+    public List<RegistroPonto> hoje() {
+        return service.buscarHoje();
+    }
+    @GetMapping("/ultimo")
+    public RegistroPonto ultimo() {
+        return service.buscarUltimoRegistro();
+    }
 }
