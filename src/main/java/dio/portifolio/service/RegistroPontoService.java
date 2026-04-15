@@ -152,10 +152,16 @@ public class RegistroPontoService {
 
     public List<RegistroPonto> buscarHoje() {
 
-        String email = SecurityContextHolder
+        var auth = SecurityContextHolder
                 .getContext()
-                .getAuthentication()
-                .getName();
+                .getAuthentication();
+
+        // 🔒 valida autenticação
+        if (auth == null || !auth.isAuthenticated() || auth.getName().equals("anonymousUser")) {
+            return List.of(); // retorna vazio ao invés de quebrar
+        }
+
+        String email = auth.getName();
 
         Funcionario funcionario = funcionarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
@@ -163,10 +169,12 @@ public class RegistroPontoService {
         LocalDate hoje = LocalDate.now();
 
         return repository.findByFuncionarioIdAndDataHoraBetween(
-                funcionario.getId(),
-                hoje.atStartOfDay(),
-                hoje.atTime(23, 59, 59)
-        );
+                        funcionario.getId(),
+                        hoje.atStartOfDay(),
+                        hoje.atTime(23, 59, 59)
+                ).stream()
+                .sorted(Comparator.comparing(RegistroPonto::getDataHora))
+                .toList();
     }
     public RegistroPonto buscarUltimoRegistro() {
 

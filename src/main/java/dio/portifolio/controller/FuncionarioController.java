@@ -4,6 +4,7 @@ import dio.portifolio.dto.FuncionarioInputDTO;
 import dio.portifolio.dto.FuncionarioOutputDTO;
 import dio.portifolio.service.FuncionarioService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class FuncionarioController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<FuncionarioOutputDTO> listar() {
         return service.listar();
     }

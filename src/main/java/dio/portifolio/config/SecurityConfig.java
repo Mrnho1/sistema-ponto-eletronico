@@ -27,6 +27,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/h2-console/**","/swagger-ui/**","/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/funcionarios").permitAll()
+
+                        .requestMatchers("/pontos/**").authenticated()         // 🔥 ADICIONA ISSO
+                        .requestMatchers("/banco-horas/**").authenticated()    // 🔥 E ISSO
+
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
