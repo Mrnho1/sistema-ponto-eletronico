@@ -13,8 +13,10 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
+                //adicionando segurança global, botão authorize
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
+                        //esquema de bearerAuth
                         .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()
                                         .name("bearerAuth")
@@ -25,3 +27,8 @@ public class SwaggerConfig {
                 );
     }
 }
+//login → pega token
+//swagger armazena token
+//envia automaticamente em cada request
+//JwtFilter valida
+//SecurityConfig libera acesso
