@@ -29,3 +29,9 @@ public class FuncionarioAdapter {
                 .build();
     }
 }
+// Esse adapter faz
+// 1. Cria objeto Funcionário
+// 2. Copia dados do DTO
+// 3. Define a role para usuário
+// 5. Converte Entidade como resposta ao front
+// 6. Não responde com a senha por segurança
