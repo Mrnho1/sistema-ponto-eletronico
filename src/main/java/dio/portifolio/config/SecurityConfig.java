@@ -29,7 +29,7 @@ public class SecurityConfig {
                 //define quem pode acessar o que
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/h2-console/**","/swagger-ui/**","/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/cadastro").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/register").permitAll()
                         //rota autenticada
                         .requestMatchers("/pontos/**").authenticated()
                         .requestMatchers("/banco-horas/**").authenticated()

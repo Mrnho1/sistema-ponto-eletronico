@@ -19,19 +19,21 @@ import java.util.List;
 @RequestMapping("/admin/pontos")
 @RequiredArgsConstructor
 public class AdminPontoController {
-
+    //Acesso ao service
     private final RegistroPontoService service;
-
+    //Lista funcionários por id
     @GetMapping("/{funcionarioId}")
     @PreAuthorize("hasRole('ADMIN')")
     public List<RegistroPonto> listarPorFuncionario(@PathVariable Long funcionarioId) {
         return service.listarPorFuncionario(funcionarioId);
     }
+    //Atualiza funcionário
     @PutMapping
     @PreAuthorize("hasRole('ADMIN')")
     public void atualizar(@RequestBody AtualizarPontoDTO dto) {
         service.atualizarPonto(dto);
     }
+    //Busca funcionários por email
     @GetMapping("/email")
     @PreAuthorize("hasRole('ADMIN')")
     public List<RegistroPonto> listarPorEmail(@RequestParam String email) {

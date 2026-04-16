@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class AjusteManualController {
 
     private final AjusteManualService service;
-
+    //Atualizar usando post para cirar histórico de alteração
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public void ajustar(@RequestBody AjusteManualDTO dto) {

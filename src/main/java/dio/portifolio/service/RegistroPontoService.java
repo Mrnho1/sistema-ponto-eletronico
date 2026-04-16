@@ -33,6 +33,9 @@ public class RegistroPontoService {
     private final BancoHorasRepository bancoHorasRepository;
 
     public RegistroPonto baterPonto(RegistroPontoDTO dto) {
+        if (dto.getTipo() == null) {
+            throw new RuntimeException("Tipo é obrigatório");
+        }
 
         String email = SecurityContextHolder
                 .getContext()
@@ -42,14 +45,17 @@ public class RegistroPontoService {
         Funcionario funcionario = funcionarioRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Funcionário não encontrado"));
 
-        List<RegistroPonto> registros = repository.findByFuncionarioId(funcionario.getId());
+        List<RegistroPonto> registros = repository.findByFuncionarioId(funcionario.getId())
+                .stream()
+                .sorted(Comparator.comparing(RegistroPonto::getDataHora))
+                .toList();
 
 
         if (!registros.isEmpty()) {
             RegistroPonto ultimo = registros.get(registros.size() - 1);
 
             if (ultimo.getTipo() == dto.getTipo()) {
-                throw new RuntimeException("Não pode registrar duas vezes seguidas o mesmo tipo");
+                throw new RuntimeException("Você já registrou esse tipo de ponto");
             }
         }
 
@@ -60,6 +66,10 @@ public class RegistroPontoService {
                 .build();
 
         if (dto.getTipo() == TipoRegistro.SAIDA) {
+
+            if (registros.isEmpty()) {
+                throw new RuntimeException("Não existe entrada para registrar saída");
+            }
 
             RegistroPonto entrada = registros.get(registros.size() - 1);
 
@@ -77,7 +87,6 @@ public class RegistroPontoService {
                 registro.setProcessado(true);
 
                 repository.save(entrada);
-                repository.save(registro);
             }
         }
 
